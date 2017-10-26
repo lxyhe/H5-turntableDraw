@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="Generator" content="EditPlus®">
+  <meta name="Author" content="">
+  <meta name="Keywords" content="">
+  <meta name="Description" content="">
+  <meta content="initial-scale=1,maximum-scale=1,user-scalable=no,width=device-width" name="viewport"/>
+    <title>我的账单</title>
+    <link rel="stylesheet" href="../css/style.css"/>
+	<link rel="stylesheet" href="../css/style1.css"/>
+	
+</head>
+<body>
+<div class="loading turn absolute" id="loading">
+	 <span class="changeBgColor absolute"></span>
+</div>
+
+<div class="page-wrap" id="main" >
+    <div class="page pageback">
+			<div id="text">
+
+			</div>
+		
+    </div>
+</div>
+
+<script src="../js/zepto.min.js"></script>
+<script src="../js/PageSlider.js"></script>
+
+<script >
+	/*未加载时候显示的动画事件*/
+    document.onreadystatechange = loading;    
+    function loading(){
+	    if(document.readyState == "complete")  { 
+		   
+		    $(".page").show();
+			 
+	    }
+    }
+    var p = new PageSlider({
+        pages: $('.page-wrap .page')
+    });
+	
+
+	var phone=localStorage.getItem('userPhone');
+	phone=17051550666;
+	if(phone==undefined){
+		gologin();
+	}
+	
+
+	var XHR=null;  
+		if (window.XMLHttpRequest) {  
+			XHR = new XMLHttpRequest();  
+		} else if (window.ActiveXObject) {  
+			XHR = new ActiveXObject("Microsoft.XMLHTTP");    
+		} else {  
+			XHR = null;  
+		}  
+	
+		if(XHR){  
+			//XHR.open("GET", "http://10.12.12.129:8084/api/public/prize/bill/"+phone); 
+			//XHR.open("GET", "http://192.168.108.171:8080/opsserver/api/public/prize/bill/"+phone); 
+			XHR.open("GET", "http://pay.bjia.cn/opsserver/api/public/prize/bill/"+phone); 
+			_this=this;
+			XHR.onreadystatechange = function () { 
+            if (XHR.readyState == 4 && XHR.status == 200) { 
+				var data=JSON.parse(XHR.responseText);
+				console.log(data);
+				if(data.code=="60001"){
+					var todays=getTise();
+					var content5=` <p>今天是${todays}</p>
+								   <p>您太神秘了,土豪！</p>`
+						$("#text").append(content5);
+						$("#loading").hide();
+				}
+				if(data.code=="0"){
+					console.log(data);
+					var today=getTise();
+					var _time;
+					if(data.obj.length===0){
+						var content=`<p>今天是${today}</p>
+									 <p>暂时未查到您相关记录</p>`
+						$("#text").append(content);
+						$("#loading").hide();
+						return;
+				}else{
+						var today=getTise();
+						//_time=numtime(data.obj);
+						var content = `<p>今天是${today}</p>
+								       
+								       <p>期间您总共消费
+									      <b class="numto">
+									         ${data.obj.sum_consume}
+									      </b>元
+									  <p>您的土豪指数为
+										  <b class="tyrant">
+										     ${data.obj.start_vale}
+										  </b>
+									  </p>
+									  <p>${data.obj.sum_tele}</p>
+									  <p>${data.obj.sum_gprs}</p>`;
+						$("#text").append(content);
+						$("#loading").hide();
+						return;
+					}
+					/*if(data.obj.sum_tele==null&&data.obj.sum_gprs==null||data.obj.sum_tele==0&&data.obj.sum_gprs==0){
+						_time=numtime(data.obj);
+						var content4=`<p>今天是${today}</p>
+									  <p>你已和中麦一同走过的${_time}个日子</p>
+									  <p>您还没有任何消费哦
+									  </p> 
+									  `
+						$("#text").append(content4);
+						$("#loading").hide();
+						return;
+					}
+					if(data.obj.sum_tele!==null&&data.obj.sum_gprs!==null&&data.obj.sum_tele!==0&&data.obj.sum_gprs!==0){
+						
+						var today=getTise();
+						_time=numtime(data.obj);
+						var content1=`<p>今天是${today}</p>
+								      <p>感谢有你陪伴我们走过了${_time}个日子</p>
+									  <p>期间您总共消费
+									  <b class="numto">
+									  ${data.obj.sum_consume}
+									  </b>元
+									  </p>
+                                      <p>其中您通话总共花费
+									  <b class="numto">
+										 ${data.obj.sum_tele}
+									  </b>
+									  元,上网总共花费 <b class="numto">
+									  ${data.obj.sum_gprs}
+									  </b>元,短彩信总共花费
+									  ${data.obj.con_number}元,
+									  </p>
+									  <p>${data.obj.max_tele_date}是你最忙碌的一天,在这一天您总共通话${data.obj.max_tele_value}分钟</p>
+									  <p>${data.obj.con_number}是你关系最紧密的人,你们的互动时长达到了${data.obj.con_value}分钟</p>
+									  <p>${data.obj.max_gprs_date}也许是你最土豪的一天,那一天用了${data.obj.max_gprs_value}MB的流量</p>
+									  <p>还记得那一天你忙啥了么?</p>
+									  <p>您的土豪指数为
+										<span class="tyrant">${data.obj.start_vale}</span>
+									  </p>`
+						$("#text").append(content1);
+						$("#loading").hide();
+						return;
+					}
+					
+					if(data.obj.sum_tele==null&&data.obj.sum_gprs!==null||data.obj.sum_tele==0&&data.obj.sum_gprs!==0){
+						_time=numtime(data.obj);
+						gettotalflow(data.obj);
+						var content2=gettotalflow(data.obj);
+						console.log(content2);
+						$("#text").append(content2);
+						$("#loading").hide();
+						return;
+					}
+					if(data.obj.sum_tele!==null&&data.obj.sum_gprs==null||data.obj.sum_tele!==0&&data.obj.sum_gprs==0){
+		
+						_time=numtime(data.obj);
+						var content3=`<p>今天是${today}</p>
+								      <p>感谢有你陪伴我们走过了${_time}个日子</p>
+									  <p>总计通话 <b class="numto">${data.obj.sum_tele}
+									  </b>分钟,总计消费 <b class="numto">${data.obj.sum_consume}
+									  </b>
+									  元</p>
+									  <p>${data.obj.max_tele_date}是您最忙碌的一天，在这一天您总共通话${data.obj.max_tele_value}分钟<p>
+									  <p>${data.obj.con_number}是你关系最密切的人</p>
+									  <p>你们的互动时长达到了${data.obj.con_value}分钟</p>
+									  <p>还记得那一天你忙啥了么?</p>
+									  <p>您的土豪指数为
+										<span class="tyrant">${data.obj.start_vale}</span>
+									  </p>
+									  `
+						$("#text").append(content3);
+						$("#loading").hide();
+						return;
+					}
+				}*/
+				
+            }
+			
+        };  
+        XHR.send();  
+		}
+		function gologin(){
+			window.location.href="https://open.weixin.qq.com/connect/oauth2/authorize?scope=snsapi_base&state=choujiang&redirect_uri=http%3A%2F%2Fwt.10020.cn%2Fquery&response_type=code&appid=wx4786e32f1967c6b2#wechat_redirect";
+		}
+		
+		function getTise() {
+          var oDate = new Date();
+          var year = oDate.getFullYear();
+          var month = oDate.getMonth() + 1;
+		  month<10?"0"+month:month;
+          var day = oDate.getDate();
+		  day<10?"0"+day:day;
+          return year+"."+month+"."+day;
+		}
+		/*function numtime(time){
+			 if(time===null){
+				return;
+			}
+			var test;
+			if(time.days!==0&&time.days!==null){
+				test=time.days;
+			}
+			else{
+				test=1;
+			}
+			return test;
+		}*/
+		
+</script>
+</body>
+</html>
